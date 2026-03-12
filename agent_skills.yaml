@@ -1,0 +1,487 @@
+# agent_skills.yaml - Профили и навыки ИИ-агентов
+# 
+# Используется для Auto-Assignment задач
+# Формат: skills level 1-10, experience: beginner/intermediate/advanced/expert
+
+meta:
+  last_updated: "2026-03-12T19:00:00Z"
+  version: "1.0.0"
+
+# ==========================================
+# АГЕНТЫ
+# ==========================================
+
+agents:
+  # ========================================
+  # Claude (Anthropic)
+  # ========================================
+  "Claude (Anthropic)":
+    model_id: "claude-3-opus"
+    provider: "Anthropic"
+    
+    # Навыки (level: 1-10)
+    skills:
+      - name: "python"
+        level: 9
+        experience: "expert"
+        notes: "NumPy, SciPy, pandas, asyncio"
+      
+      - name: "go"
+        level: 8
+        experience: "advanced"
+        notes: "Gin, gRPC, Clean Architecture"
+      
+      - name: "typescript"
+        level: 8
+        experience: "advanced"
+        notes: "React, Next.js, Node.js"
+      
+      - name: "math"
+        level: 9
+        experience: "expert"
+        notes: "Linear algebra, statistics, algorithms"
+      
+      - name: "architecture"
+        level: 9
+        experience: "expert"
+        notes: "Microservices, DDD, Clean Architecture"
+      
+      - name: "documentation"
+        level: 10
+        experience: "expert"
+        notes: "Technical writing, API docs, architecture"
+      
+      - name: "testing"
+        level: 8
+        experience: "advanced"
+        notes: "Unit, integration, e2e"
+      
+      - name: "sql"
+        level: 8
+        experience: "advanced"
+        notes: "PostgreSQL, TimescaleDB, query optimization"
+    
+    # Специализации
+    specializations:
+      - "quantitative-analysis"
+      - "algorithm-design"
+      - "architecture"
+      - "documentation"
+      - "backend"
+    
+    # Предпочтения
+    preferences:
+      preferred_task_types:
+        - "algorithm"
+        - "architecture"
+        - "documentation"
+        - "backend"
+        - "quant"
+      avoid_task_types:
+        - "ui"
+        - "css"
+        - "frontend-design"
+    
+    # Производительность
+    performance:
+      success_rate: 0.95
+      avg_completion_time_factor: 0.85  # быстрее среднего
+      total_tasks_completed: 3
+      last_10_outcomes: ["success", "success", "success"]
+    
+    # Текущая нагрузка
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # GPT-4 (OpenAI)
+  # ========================================
+  "GPT-4 (OpenAI)":
+    model_id: "gpt-4-turbo"
+    provider: "OpenAI"
+    
+    skills:
+      - name: "python"
+        level: 9
+        experience: "expert"
+        notes: "All major frameworks"
+      
+      - name: "typescript"
+        level: 9
+        experience: "expert"
+        notes: "React, Next.js, Vue, Angular"
+      
+      - name: "javascript"
+        level: 9
+        experience: "expert"
+        notes: "Node.js, Express, frontend"
+      
+      - name: "react"
+        level: 9
+        experience: "expert"
+        notes: "Hooks, Redux, SSR"
+      
+      - name: "go"
+        level: 7
+        experience: "intermediate"
+        notes: "Basic services"
+      
+      - name: "testing"
+        level: 9
+        experience: "expert"
+        notes: "Jest, Pytest, Cypress"
+      
+      - name: "api-design"
+        level: 9
+        experience: "expert"
+        notes: "REST, GraphQL, gRPC"
+      
+      - name: "math"
+        level: 6
+        experience: "intermediate"
+        notes: "Basic algorithms"
+    
+    specializations:
+      - "frontend"
+      - "api-design"
+      - "testing"
+      - "fullstack"
+    
+    preferences:
+      preferred_task_types:
+        - "frontend"
+        - "api"
+        - "testing"
+        - "fullstack"
+      avoid_task_types:
+        - "complex-math"
+        - "quant"
+    
+    performance:
+      success_rate: 0.92
+      avg_completion_time_factor: 1.0
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # Kimi K2.5 (Moonshot AI)
+  # ========================================
+  "Kimi K2.5 (Moonshot AI)":
+    model_id: "kimi-k2.5"
+    provider: "Moonshot AI"
+    
+    skills:
+      - name: "python"
+        level: 8
+        experience: "advanced"
+        notes: "Data processing, scripting"
+      
+      - name: "math"
+        level: 7
+        experience: "advanced"
+        notes: "Statistics, basic ML"
+      
+      - name: "documentation"
+        level: 8
+        experience: "advanced"
+        notes: "Technical documentation"
+      
+      - name: "data-analysis"
+        level: 8
+        experience: "advanced"
+        notes: "Pandas, data visualization"
+      
+      - name: "testing"
+        level: 7
+        experience: "intermediate"
+        notes: "Basic testing"
+      
+      - name: "go"
+        level: 5
+        experience: "beginner"
+        notes: "Basic syntax"
+    
+    specializations:
+      - "data-analysis"
+      - "documentation"
+      - "testing"
+    
+    preferences:
+      preferred_task_types:
+        - "data"
+        - "documentation"
+        - "testing"
+        - "analysis"
+      avoid_task_types:
+        - "architecture"
+        - "frontend"
+        - "complex-backend"
+    
+    performance:
+      success_rate: 0.88
+      avg_completion_time_factor: 1.1
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # Qwen 3.5 Plus (Alibaba)
+  # ========================================
+  "Qwen 3.5 Plus (Alibaba)":
+    model_id: "qwen-3.5-plus"
+    provider: "Alibaba Cloud"
+    
+    skills:
+      - name: "python"
+        level: 8
+        experience: "advanced"
+        notes: "General Python"
+      
+      - name: "go"
+        level: 7
+        experience: "intermediate"
+        notes: "Services, APIs"
+      
+      - name: "testing"
+        level: 9
+        experience: "expert"
+        notes: "Unit tests, integration tests, TDD"
+      
+      - name: "code-review"
+        level: 9
+        experience: "expert"
+        notes: "Best practices, patterns, security"
+      
+      - name: "bug-fixing"
+        level: 8
+        experience: "advanced"
+        notes: "Debugging, root cause analysis"
+      
+      - name: "documentation"
+        level: 7
+        experience: "intermediate"
+        notes: "Code comments, basic docs"
+    
+    specializations:
+      - "testing"
+      - "code-review"
+      - "bug-fixing"
+      - "quality-assurance"
+    
+    preferences:
+      preferred_task_types:
+        - "testing"
+        - "review"
+        - "bugfix"
+        - "qa"
+      avoid_task_types: []
+    
+    performance:
+      success_rate: 0.90
+      avg_completion_time_factor: 1.0
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # DeepSeek V3 (DeepSeek AI)
+  # ========================================
+  "DeepSeek V3 (DeepSeek AI)":
+    model_id: "deepseek-v3"
+    provider: "DeepSeek AI"
+    
+    skills:
+      - name: "python"
+        level: 8
+        experience: "advanced"
+        notes: "Good for coding tasks"
+      
+      - name: "math"
+        level: 8
+        experience: "advanced"
+        notes: "Strong mathematical reasoning"
+      
+      - name: "algorithm"
+        level: 8
+        experience: "advanced"
+        notes: "Algorithm design and optimization"
+      
+      - name: "go"
+        level: 6
+        experience: "intermediate"
+        notes: "Basic services"
+    
+    specializations:
+      - "coding"
+      - "algorithm"
+      - "math"
+    
+    preferences:
+      preferred_task_types:
+        - "coding"
+        - "algorithm"
+        - "optimization"
+      avoid_task_types:
+        - "frontend"
+    
+    performance:
+      success_rate: 0.87
+      avg_completion_time_factor: 1.05
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # Gemini 2.0 Flash (Google)
+  # ========================================
+  "Gemini 2.0 Flash (Google)":
+    model_id: "gemini-2.0-flash"
+    provider: "Google"
+    
+    skills:
+      - name: "python"
+        level: 8
+        experience: "advanced"
+      
+      - name: "typescript"
+        level: 8
+        experience: "advanced"
+      
+      - name: "go"
+        level: 7
+        experience: "intermediate"
+      
+      - name: "multi-modal"
+        level: 9
+        experience: "expert"
+        notes: "Images, documents, audio"
+      
+      - name: "documentation"
+        level: 8
+        experience: "advanced"
+    
+    specializations:
+      - "multi-modal"
+      - "documentation"
+      - "general"
+    
+    preferences:
+      preferred_task_types:
+        - "general"
+        - "documentation"
+        - "analysis"
+      avoid_task_types:
+        - "complex-architecture"
+    
+    performance:
+      success_rate: 0.85
+      avg_completion_time_factor: 0.95
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+  # ========================================
+  # MiniMax M2 (MiniMax AI)
+  # ========================================
+  "MiniMax M2 (MiniMax AI)":
+    model_id: "minimax-m2"
+    provider: "MiniMax AI"
+    
+    skills:
+      - name: "python"
+        level: 7
+        experience: "intermediate"
+      
+      - name: "general"
+        level: 7
+        experience: "intermediate"
+      
+      - name: "agent-workflows"
+        level: 8
+        experience: "advanced"
+        notes: "Multi-agent systems"
+    
+    specializations:
+      - "agent-workflows"
+      - "general"
+    
+    preferences:
+      preferred_task_types:
+        - "general"
+        - "workflow"
+        - "automation"
+      avoid_task_types:
+        - "complex-math"
+    
+    performance:
+      success_rate: 0.82
+      avg_completion_time_factor: 1.1
+      total_tasks_completed: 0
+      last_10_outcomes: []
+    
+    current_load:
+      active_tasks: 0
+      reserved_tasks: 0
+      available: true
+
+# ==========================================
+# КОНФИГУРАЦИЯ AUTO-ASSIGNMENT
+# ==========================================
+
+config:
+  strategy: "best_fit"  # best_fit, round_robin, least_loaded, performance
+  
+  # Минимальный скоринг для назначения
+  min_score_threshold: 0.5
+  
+  # Веса для формулы скоринга
+  scoring_weights:
+    skills_match: 0.40
+    specialization_match: 0.25
+    performance_score: 0.20
+    load_balance: 0.15
+  
+  # Лимиты
+  max_tasks_per_agent: 3
+  assignment_timeout_minutes: 30
+  
+  # Авто-переназначение
+  reassign_on_timeout: true
+  reassign_on_decline: true
+  reassign_on_failure: true
+
+# ==========================================
+# СТАТИСТИКА
+# ==========================================
+
+statistics:
+  total_assignments: 0
+  successful_assignments: 0
+  declined_assignments: 0
+  auto_reassigned: 0
+  
+  # История назначений
+  assignment_history: []

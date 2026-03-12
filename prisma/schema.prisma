@@ -1,0 +1,320 @@
+// CycleCast v3.2 Final - Prisma Schema
+// Database: SQLite (development) / PostgreSQL + TimescaleDB (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE ENTITIES
+// ============================================
+
+/// Financial instrument (stock, crypto, commodity, etc.)
+model Instrument {
+  id        String   @id @default(cuid())
+  symbol    String   @unique
+  name      String?
+  exchange  String?
+  type      String   // STOCK, INDEX, FOREX, COMMODITY, CRYPTO, FUTURES, ETF, TRUST
+  currency  String   @default("USD")
+  tickSize  Float?
+  isActive  Boolean  @default(true)
+  
+  // Crypto/GBTC specific
+  proxyType        String?   // FUTURES, TRUST, ETF
+  regimeChangeDate DateTime? // Structural shift date (GBTC: 2024-01-11)
+  signalDirection  Int       @default(1) // 1 = direct, -1 = inverse
+  
+  // Validation settings
+  fteThreshold       Float @default(0.05)
+  minSignalDistance  Int   @default(21)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  marketData    MarketData[]
+  cotData       CotData[]
+  signals       Signal[]
+  cycles        Cycle[]
+  annualCycles  AnnualCycle[]
+  backtests     BacktestResult[]
+}
+
+/// OHLCV market data
+model MarketData {
+  id           String   @id @default(cuid())
+  instrumentId String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  time       DateTime
+  timeframe  String   // 1m, 5m, 15m, 1h, 4h, 1d, 1w, 1M
+  
+  // OHLCV
+  open   Float
+  high   Float
+  low    Float
+  close  Float
+  volume BigInt?
+  
+  // Processed
+  adjustedClose   Float?
+  normalizedClose Float?
+  detrendedClose  Float?
+  yearDigit       Int? // year % 10 for Decennial pattern
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([instrumentId, time, timeframe])
+  @@index([instrumentId, time])
+}
+
+/// COT (Commitment of Traders) data or GBTC Premium
+model CotData {
+  id           String   @id @default(cuid())
+  instrumentId String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  reportDate DateTime
+  
+  // COT positions (futures)
+  commercialsLong  BigInt?
+  commercialsShort BigInt?
+  commercialsNet   BigInt?
+  largeSpecsLong   BigInt?
+  largeSpecsShort  BigInt?
+  smallSpecsLong   BigInt?
+  smallSpecsShort  BigInt?
+  
+  // GBTC/ETF specific
+  premium Float? // Premium/discount %
+  nav     Float? // NAV per share
+  price   Float? // Market price
+  volume  BigInt?
+  aum     BigInt?
+  
+  // Calculated indices
+  commercialIndex Float?
+  percentileRank  Float?
+  isExtreme       Boolean?
+  signalType      String? // BULLISH, BEARISH, NEUTRAL
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([instrumentId, reportDate])
+  @@index([instrumentId, reportDate])
+}
+
+// ============================================
+// ANALYSIS ENTITIES
+// ============================================
+
+/// Detected cycle
+model Cycle {
+  id           String   @id @default(cuid())
+  instrumentId String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  timeframe String
+  period    Int // Cycle period in bars
+  
+  // Cycle characteristics
+  energy     Float
+  stability  Float?
+  correlation Float?
+  phase      Float?
+  amplitude  Float?
+  
+  // Validation
+  wfaScore   Float?  // Walk-Forward Analysis score
+  isDominant Boolean @default(false)
+  
+  // Validity
+  validUntil DateTime?
+  createdAt  DateTime @default(now())
+  
+  @@unique([instrumentId, timeframe, period])
+  @@index([instrumentId, timeframe])
+}
+
+/// Annual cycle / Seasonality data
+model AnnualCycle {
+  id           String   @id @default(cuid())
+  instrumentId String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  yearDigit Int? // 0-9 for Decennial pattern, null for general
+  
+  // Cycle data (JSON)
+  cycleData     String // JSON: { days: [{day, value, confidence}], monthly_avg: {...} }
+  confidenceData String? // JSON
+  
+  // Statistics
+  yearsUsed Int
+  yearsList String // JSON array of years
+  
+  // FTE validation
+  fteCorrelation Float?
+  fteThreshold   Float?
+  fteIsValid     Boolean?
+  
+  isValid   Boolean @default(true)
+  createdAt DateTime @default(now())
+  
+  @@unique([instrumentId, yearDigit])
+}
+
+// ============================================
+// SIGNALS & RISK
+// ============================================
+
+/// Trading signal
+model Signal {
+  id           String   @id @default(cuid())
+  instrumentId String
+  instrument   Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  signalType String // BUY, SELL
+  
+  // Signal strength (with decay)
+  strength       Float
+  initialStrength Float
+  halfLifeDays   Int    @default(14)
+  ageDays        Int    @default(0)
+  
+  // Reason and timing
+  reason         String?
+  targetTime     DateTime?
+  status         String  @default("PENDING") // PENDING, TRIGGERED, EXECUTED, EXPIRED, CANCELLED
+  triggeredAt    DateTime?
+  executedAt     DateTime?
+  priceAtSignal  Float?
+  
+  // Statistical significance
+  pValue           Float?
+  confidenceLevel  Float  @default(0.95)
+  bootstrapCiLower Float?
+  bootstrapCiUpper Float?
+  
+  // Risk management
+  positionSize Float?
+  stopLoss     Float?
+  takeProfit   Float?
+  riskAmount   Float?
+  
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  lineage DataLineage?
+  
+  @@index([instrumentId, generatedAt])
+  @@index([status])
+}
+
+/// Data lineage for audit trail
+model DataLineage {
+  id       String @id @default(cuid())
+  signalId String @unique
+  signal   Signal @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  
+  // Source data (JSON)
+  sourceData String // JSON array of data sources with hashes
+  
+  // Transformations (JSON)
+  transformations String // JSON array of transformations
+  
+  // Parameters (JSON)
+  parameters String?
+  
+  // Versioning
+  codeVersion   String
+  configVersion String?
+  
+  // Integrity
+  checksum String
+  
+  createdAt DateTime @default(now())
+}
+
+// ============================================
+// BACKTESTING
+// ============================================
+
+/// Backtest result
+model BacktestResult {
+  id           String   @id @default(cuid())
+  instrumentId String?
+  instrument   Instrument? @relation(fields: [instrumentId], references: [id], onDelete: SetNull)
+  
+  strategyName String
+  
+  // Period
+  startDate    DateTime
+  endDate      DateTime
+  inSampleEnd  DateTime?
+  isInSample   Boolean @default(false)
+  
+  // Parameters (JSON)
+  parameters    String?
+  initialCapital Float @default(10000)
+  commission    Float  @default(0.001)
+  slippage      Float  @default(0.0005)
+  
+  // Performance metrics
+  totalReturn         Float?
+  cagr                Float?
+  sharpeRatio         Float?
+  sortinoRatio        Float?
+  maxDrawdown         Float?
+  maxDrawdownDuration Int?
+  winRate             Float?
+  profitFactor        Float?
+  expectancy          Float?
+  totalTrades         Int?
+  winningTrades       Int?
+  losingTrades        Int?
+  avgTradeDuration    Int?
+  
+  // Statistical validation
+  pValue            Float?
+  confidenceLevel   Float  @default(0.95)
+  bootstrapCiLower  Float?
+  bootstrapCiUpper  Float?
+  bootstrapIterations Int   @default(1000)
+  
+  // Results data (JSON)
+  equityCurve  String? // JSON
+  tradeLog     String? // JSON
+  dailyReturns String? // JSON
+  
+  status       String @default("COMPLETED") // RUNNING, COMPLETED, FAILED
+  errorMessage String?
+  
+  calculatedAt DateTime @default(now())
+  
+  @@index([strategyName])
+  @@index([calculatedAt])
+}
+
+// ============================================
+// USER & AUTH (for future use)
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String?
+  role      String   @default("USER") // USER, ADMIN
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

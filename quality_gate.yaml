@@ -1,0 +1,169 @@
+# quality_gate.yaml - Очередь проверок качества
+#
+# Quality Gate: второй агент проверяет работу первого
+# См. QUALITY_GATE.md для документации
+
+meta:
+  last_updated: "2026-03-12T19:30:00Z"
+  version: "1.0.0"
+  
+  # Автоматические проверки
+  auto_checks:
+    lint: { enabled: true, command: "make lint" }
+    tests: { enabled: true, command: "make test" }
+    typecheck: { enabled: true, command: "make typecheck" }
+    format: { enabled: true, command: "make format --check" }
+    coverage: { enabled: true, command: "make coverage", min_percent: 80 }
+
+# ==========================================
+# ОЧЕРЕДЬ НА ПРОВЕРКУ
+# ==========================================
+
+pending_reviews: []
+
+# ==========================================
+# АКТИВНЫЕ ПРОВЕРКИ
+# ==========================================
+
+active_reviews: []
+
+# ==========================================
+# ИСТОРИЯ ПРОВЕРОК
+# ==========================================
+
+review_history: []
+
+# ==========================================
+# РЕЗУЛЬТАТЫ ПРОВЕРОК (последние)
+# ==========================================
+
+review_results: []
+
+# ==========================================
+# ЧЕК-ЛИСТ ПРОВЕРКИ
+# ==========================================
+
+review_checklist:
+  code-quality:
+    name: "Качество кода"
+    items:
+      - id: "readable"
+        description: "Код читаемый и хорошо структурирован"
+        required: true
+      - id: "naming"
+        description: "Имена переменных и функций понятные"
+        required: true
+      - id: "no-duplication"
+        description: "Нет дублирования кода (DRY)"
+        required: true
+      - id: "comments"
+        description: "Комментарии добавлены где нужно"
+        required: false
+
+  architecture:
+    name: "Архитектура"
+    items:
+      - id: "clean-arch"
+        description: "Следует Clean Architecture"
+        required: true
+      - id: "separation"
+        description: "Правильное разделение ответственности"
+        required: true
+      - id: "dependencies"
+        description: "Зависимости направлены правильно (внутрь)"
+        required: true
+
+  testing:
+    name: "Тестирование"
+    items:
+      - id: "unit-tests"
+        description: "Unit тесты покрывают основную логику"
+        required: true
+      - id: "edge-cases"
+        description: "Edge cases протестированы"
+        required: false
+      - id: "test-quality"
+        description: "Тесты независимы и детерминированы"
+        required: true
+
+  documentation:
+    name: "Документация"
+    items:
+      - id: "api-docs"
+        description: "API задокументирован"
+        required: true
+      - id: "readme-updated"
+        description: "README обновлён если нужно"
+        required: false
+      - id: "worklog-updated"
+        description: "WORKLOG.md обновлён"
+        required: true
+
+# ==========================================
+# РЕВЬЮЕРЫ
+# ==========================================
+
+reviewers:
+  "Qwen 3.5 Plus (Alibaba)":
+    specializations: ["testing", "code-review", "qa"]
+    success_rate_as_reviewer: 1.0
+    total_reviews: 0
+    avg_review_time_minutes: null
+    available: true
+    
+  "Claude (Anthropic)":
+    specializations: ["architecture", "code-review"]
+    success_rate_as_reviewer: 1.0
+    total_reviews: 0
+    avg_review_time_minutes: null
+    available: true
+    
+  "GPT-4 (OpenAI)":
+    specializations: ["testing", "api-review"]
+    success_rate_as_reviewer: 1.0
+    total_reviews: 0
+    avg_review_time_minutes: null
+    available: true
+
+# ==========================================
+# ПРАВИЛА КОНФЛИКТОВ
+# ==========================================
+
+conflict_rules:
+  - rule: "cannot_review_own_work"
+    description: "Ревьюер не может быть автором задачи"
+    enforcement: "strict"
+  
+  - rule: "different_provider_preferred"
+    description: "Желательно ревьюер от другого провайдера"
+    enforcement: "soft"
+  
+  - rule: "specialization_match"
+    description: "Ревьюер должен иметь специализацию для проверки"
+    enforcement: "soft"
+
+# ==========================================
+# СТАТИСТИКА
+# ==========================================
+
+statistics:
+  total_reviews: 0
+  approved: 0
+  rejected: 0
+  approval_rate: 0.0
+  avg_review_time_minutes: null
+  
+  # По агентам
+  worker_stats: {}
+  reviewer_stats: {}
+
+# ==========================================
+# НАСТРОЙКИ
+# ==========================================
+
+settings:
+  review_timeout_minutes: 60
+  auto_assign_reviewer: true
+  require_manual_review: true
+  min_reviewer_rating: 3
+  max_rework_cycles: 3

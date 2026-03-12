@@ -1,0 +1,206 @@
+# CycleCast v3.2 Final - Docker Compose
+# Full development environment
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # DATABASES
+  # ===========================================================================
+  postgres:
+    image: postgres:16
+    container_name: cyclecast-postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-cyclecast}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cyclecast}
+      POSTGRES_DB: ${DB_NAME:-cyclecast}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyclecast"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyclecast-network
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: cyclecast-timescaledb
+    environment:
+      POSTGRES_USER: ${DB_USER:-cyclecast}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cyclecast}
+      POSTGRES_DB: ${DB_NAME:-cyclecast}
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyclecast"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyclecast-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: cyclecast-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyclecast-network
+
+  # ===========================================================================
+  # VAULT
+  # ===========================================================================
+  vault:
+    image: hashicorp/vault:latest
+    container_name: cyclecast-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-dev-root-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_data:/vault/file
+      - ./infrastructure/vault/config:/vault/config
+    networks:
+      - cyclecast-network
+
+  # ===========================================================================
+  # GO API
+  # ===========================================================================
+  api:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/docker/Dockerfile.api
+    container_name: cyclecast-api
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - DATABASE_URL=postgresql://cyclecast:cyclecast@postgres:5432/cyclecast?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - QUANT_GRPC_URL=quant:50051
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-dev-root-token}
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret}
+      - LOG_LEVEL=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_started
+      quant:
+        condition: service_started
+    networks:
+      - cyclecast-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # PYTHON QUANT SERVICE
+  # ===========================================================================
+  quant:
+    build:
+      context: ./quant
+      dockerfile: ../infrastructure/docker/Dockerfile.quant
+    container_name: cyclecast-quant
+    ports:
+      - "50051:50051"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=debug
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cyclecast-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # FRONTEND
+  # ===========================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+    container_name: cyclecast-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
+    depends_on:
+      - api
+    networks:
+      - cyclecast-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # MONITORING
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cyclecast-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - cyclecast-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cyclecast-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - cyclecast-network
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  cyclecast-network:
+    driver: bridge
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+  timescaledb_data:
+  redis_data:
+  vault_data:
+  prometheus_data:
+  grafana_data:

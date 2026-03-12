@@ -1,0 +1,151 @@
+# rollback_points.yaml - Контрольные точки для отката
+
+meta:
+  created: "2026-03-12T18:00:00Z"
+  version: "1.0.0"
+  updated_by: "GLM-5 (Zhipu AI)"
+
+config:
+  enabled: true
+  max_checkpoints: 50
+  retention_days: 30
+  auto_cleanup: true
+  storage:
+    location: "snapshots"
+    compression: "gzip"
+    encryption: false
+  verification:
+    enabled: true
+    algorithm: "sha256"
+    verify_on_restore: true
+
+auto_checkpoint:
+  pre_task:
+    enabled: true
+    for_task_types:
+      - "implementation"
+      - "refactoring"
+      - "database"
+      - "api"
+      - "security"
+      - "vision"
+    for_task_priorities:
+      - "high"
+      - "critical"
+  post_task:
+    enabled: false
+    only_on_success: true
+  milestone:
+    enabled: true
+    triggers:
+      - trigger: "database_schema_change"
+        description: "Database schema modified"
+        priority: "critical"
+      - trigger: "breaking_api_change"
+        description: "Breaking API change"
+        priority: "critical"
+      - trigger: "major_refactor"
+        description: "Major code refactoring"
+        priority: "high"
+      - trigger: "security_update"
+        description: "Security-related changes"
+        priority: "critical"
+      - trigger: "vision_model_update"
+        description: "Vision model or pattern recognition update"
+        priority: "high"
+  scheduled:
+    - cron: "0 0 * * *"
+      type: "daily"
+      retention_days: 7
+      enabled: true
+
+snapshot:
+  files:
+    enabled: true
+    include:
+      - "src/**/*"
+      - "prisma/**/*"
+      - "scripts/**/*"
+      - "*.yaml"
+      - "*.md"
+    exclude:
+      - "node_modules/**"
+      - ".next/**"
+      - "*.log"
+      - "*.lock"
+      - "snapshots/**"
+  database:
+    enabled: true
+    type: "sqlite"
+    path: "db/custom.db"
+  git:
+    enabled: true
+    include_uncommitted: true
+    include_untracked: true
+  project_config:
+    enabled: true
+    files:
+      - "agent_skills.yaml"
+      - "tasks.yaml"
+      - "progress.yaml"
+      - "session.yaml"
+      - "quality_gate.yaml"
+      - "review_bot.yaml"
+      - "rollback_points.yaml"
+  state:
+    progress: true
+    sessions: true
+
+types:
+  pre_task:
+    prefix: "RP-PRE"
+    description: "Created before task execution"
+    auto_delete_after_task: true
+    retention_days: 7
+  post_task:
+    prefix: "RP-POST"
+    description: "Created after task completion"
+    auto_delete_after_task: false
+    retention_days: 14
+  milestone:
+    prefix: "RP-MS"
+    description: "Created at project milestone"
+    auto_delete_after_task: false
+    retention_days: 90
+  manual:
+    prefix: "RP-MAN"
+    description: "Manually created checkpoint"
+    auto_delete_after_task: false
+    retention_days: 30
+  scheduled:
+    prefix: "RP-SCH"
+    description: "Scheduled checkpoint"
+    auto_delete_after_task: false
+    retention_days: 14
+  pre_rollback:
+    prefix: "RP-RBK"
+    description: "Created before rollback"
+    auto_delete_after_task: false
+    retention_days: 7
+
+checkpoints: []
+rollback_history: []
+
+statistics:
+  checkpoints_created: 0
+  checkpoints_deleted: 0
+  rollbacks_performed: 0
+  rollbacks_successful: 0
+  rollbacks_failed: 0
+  storage_used_bytes: 0
+  by_type:
+    pre_task: 0
+    post_task: 0
+    milestone: 0
+    manual: 0
+    scheduled: 0
+    pre_rollback: 0
+  avg_checkpoint_size_bytes: 0
+  avg_rollback_time_seconds: 0
+
+cleanup_queue: []

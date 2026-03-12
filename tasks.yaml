@@ -1,0 +1,195 @@
+# tasks.yaml - Машино-читаемая очередь задач
+# Версия: 1.2.0
+# Формат: YAML для парсинга ИИ-агентами
+
+meta:
+  project: CycleCast
+  version: "3.2 Final"
+  created: 2026-03-12
+  last_updated: "2025-01-15T15:00:00Z"
+
+# Текущая фаза
+current_phase: 3
+current_sprint: 1
+
+# Определение фаз (из PLAN.md)
+phases:
+  0:
+    name: "Backtesting & Math Prototyping"
+    weeks: [1, 2, 3, 4]
+    status: completed
+  1:
+    name: "Market Data & Infrastructure"
+    weeks: [5, 6, 7, 8]
+    status: completed
+  2:
+    name: "Seasonality Module"
+    weeks: [9, 10, 11, 12]
+    status: completed
+  3:
+    name: "Integration & Production Readiness"
+    weeks: [13, 14, 15, 16]
+    status: in_progress
+    depends_on: [0, 1, 2]
+
+# Очередь задач
+tasks:
+  # ========================================
+  # Phase 0: Python Quant Prototypes - COMPLETED
+  # ========================================
+  - id: QS-001
+    title: "QSpectrum Python Prototype"
+    phase: 0
+    priority: critical
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T12:00:00Z
+
+  - id: QS-002
+    title: "Bootstrap CI Streaming Implementation"
+    phase: 0
+    priority: high
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T14:00:00Z
+
+  - id: PH-001
+    title: "Phenomenological DTW Prototype"
+    phase: 0
+    priority: high
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T16:00:00Z
+
+  - id: TEST-001
+    title: "Test Data Generation"
+    phase: 0
+    priority: critical
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T00:30:00Z
+
+  # ========================================
+  # Phase 1: Infrastructure - COMPLETED
+  # ========================================
+  - id: INF-001
+    title: "Go Project Setup"
+    phase: 1
+    priority: critical
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T19:00:00Z
+
+  # ========================================
+  # Phase 2: Seasonality Module - COMPLETED
+  # ========================================
+  - id: SEA-001
+    title: "Historical Data Loader (30-50 years)"
+    phase: 2
+    priority: critical
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-13T23:30:00Z
+
+  - id: SEA-002
+    title: "Detrending & Normalization Pipeline"
+    phase: 2
+    priority: high
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-14T02:00:00Z
+
+  - id: SEA-003
+    title: "FTE Validation Engine"
+    phase: 2
+    priority: high
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-14T04:00:00Z
+
+  - id: SEA-004
+    title: "Adaptive Threshold with Regime Detection"
+    phase: 2
+    priority: medium
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-14T06:00:00Z
+
+  - id: SEA-005
+    title: "Seasonality Dashboard API"
+    phase: 2
+    priority: medium
+    status: completed
+    assignee: "Qwen 3.5"
+    completed: 2026-03-14T08:00:00Z
+
+  # ========================================
+  # Phase 3: Integration & Production - IN PROGRESS
+  # ========================================
+  - id: FE-001
+    title: "Next.js Frontend Dashboard"
+    phase: 3
+    priority: critical
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T15:00:00Z"
+
+  - id: FE-002
+    title: "Seasonality Analysis Page"
+    phase: 3
+    priority: high
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T15:00:00Z"
+
+  - id: FE-003
+    title: "QSpectrum Analysis Page"
+    phase: 3
+    priority: high
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T15:00:00Z"
+
+  - id: FE-004
+    title: "Backtesting Page"
+    phase: 3
+    priority: medium
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T16:00:00Z"
+
+  - id: API-001
+    title: "Next.js API Routes for Quant Modules"
+    phase: 3
+    priority: critical
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T15:00:00Z"
+
+  - id: DB-001
+    title: "Update Prisma Schema for CycleCast"
+    phase: 3
+    priority: high
+    status: completed
+    assignee: "Z.ai Code"
+    completed: "2025-01-15T15:00:00Z"
+
+# Статистика
+statistics:
+  total_tasks: 17
+  completed: 17
+  in_progress: 0
+  pending: 0
+  blocked: 0
+  total_estimated_hours: 100
+  total_actual_hours: 36.0
+  
+  # By Phase
+  phase_0_tasks: 4
+  phase_0_completed: 4
+  phase_1_tasks: 1
+  phase_1_completed: 1
+  phase_2_tasks: 5
+  phase_2_completed: 5
+  phase_3_tasks: 7
+  phase_3_completed: 7
